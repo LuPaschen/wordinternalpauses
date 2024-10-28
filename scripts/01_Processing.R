@@ -8,7 +8,7 @@ library(xtable)
 library(scales)
 
 # 0) Optionally: Load workspace
-load(here("wordinternalpauses.RData"))
+#load(here("wordinternalpauses.RData"))
 
 
 
@@ -496,6 +496,6 @@ qqline(residuals_lmm, col = "red")
 
 
 # 10) Optional: Save workspace
-save.image(here("wordinternalpauses.RData"))
+#save.image(here("wordinternalpauses.RData"))
 
 
