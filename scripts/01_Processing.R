@@ -397,7 +397,7 @@ vowel_list <- c("a", "A", "E", "e", "I", "i", "O", "o", "U", "u",
                 "Y", "y", "@", "1", "2", "3", "6", "7", "8", "9", 
                 "V", "&", "{", "}", "Q", "M")
 
-# Process the dataframe
+# Add classification for vowels
 final_lengthening_data <- doreco_ph_csv_data %>%
   # Discard columns not needed for analysis
   select(-ref,-tx,-core_extended,-ft,-mb,-mb_ID,-gl,-ps,-"doreco-mb-algn",-"mc-zero",-refind,-isnref) %>%
@@ -421,8 +421,8 @@ final_lengthening_data <- doreco_ph_csv_data %>%
     max_count = if_else(sum_vowels > 0, max(counting_vowels, na.rm = TRUE), NA_real_),
     pause_type = last(next_ph),
     position = case_when(
-      counting_vowels == max_count ~ ifelse(pause_type == "<p:>", "final_pause", 
-                                            ifelse(pause_type == "<<wip>>", "final_wip", NA_character_)),
+      counting_vowels == max_count ~ ifelse(pause_type == "<p:>", "before_pause", 
+                                            ifelse(pause_type == "<<wip>>", "before_wip", NA_character_)),
       segment_type == "vowel" ~ "not_final",
       TRUE ~ NA_character_),
     speech_rate = ifelse(sum(duration) - duration == 0, NA, round(1000*((n() - 1) / (sum(duration) - duration)), 3))
@@ -446,10 +446,10 @@ final_lengthening_data <- doreco_ph_csv_data %>%
 
 # Plotting vowel durations as a function of position
 final_lengthening_plot <- final_lengthening_data
-final_lengthening_plot$position <- factor(final_lengthening_plot$position, levels = c("not_final", "final_pause", "final_wip"))
+final_lengthening_plot$position <- factor(final_lengthening_plot$position, levels = c("not_final", "before_pause", "before_wip"))
 boxplot_lengthening <- ggplot(final_lengthening_plot, aes(x = position, y = duration, fill = position)) +
   geom_boxplot() +
-  scale_fill_manual(values = c("not_final" = "black", "final_pause" = "darkgrey", "final_wip" = "lightgrey")) +
+  scale_fill_manual(values = c("not_final" = "black", "before_pause" = "darkgrey", "before_wip" = "lightgrey")) +
   theme_minimal() +
   theme(text = element_text(size = 24),
         legend.position = "none") +
@@ -460,7 +460,7 @@ boxplot_lengthening <- ggplot(final_lengthening_plot, aes(x = position, y = dura
   ) +
   coord_cartesian(ylim = c(0, 250)) +
   geom_signif(
-  comparisons = list(c("not_final", "final_pause"), c("final_pause", "final_wip")),
+  comparisons = list(c("not_final", "before_pause"), c("before_pause", "before_wip")),
   map_signif_level = TRUE,
   textsize = 6,
   y_position = c(175, 175),
