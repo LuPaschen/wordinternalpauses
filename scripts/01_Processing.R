@@ -153,17 +153,21 @@ wip_count_plot <- ggplot(counting_wips_plus_pivot,
   theme(axis.text.x = element_text(angle = 45, hjust = 1), text=element_text(size=24), legend.position = "none")
 ggsave(here("images", "wip-count-per-lg.png"), plot = wip_count_plot, width = 12, height = 12, units = "in", dpi = 300)
 
-# wip duration
-histogram_wip_duration <- ggplot(doreco_data_preprocessed, aes(x = pause_duration)) +
-  geom_histogram(aes(y = stat(count) / sum(..count..)), fill = "steelblue", color = "white", bins = 30) +
-  geom_density(data = doreco_data_preprocessed, aes(x = pause_duration), color = "black", alpha = 0.7, linewidth = 1.2) +
-  geom_rug(alpha = 0.5, sides = "b") +
-  scale_fill_viridis_c(option = "D", direction = -1) +
-  xlim(0,2000)+
+# Combined density plot for pause durations
+combined_density_plot <- ggplot() +
+  # Density line for cleaned_pause_data (regular speech pauses)
+  geom_density(data = cleaned_pause_data, aes(x = pause_duration, color = "general"), 
+               alpha = 0.7, linewidth = 1.5) +
+  # Density line for doreco_data_preprocessed (wip's)
+  geom_density(data = doreco_data_preprocessed, aes(x = pause_duration, color = "wip"), 
+               alpha = 0.7, linewidth = 1.5) +
+  scale_color_manual(values = c("general" = "black", "wip" = "lightgrey")) +
+  xlim(0, 2500) +
   theme_minimal() +
-  theme(text=element_text(size=24))+
-  labs(title = "Histogram of <<wip>> duration", x = "Duration (msec)", y = "Density")
-ggsave(here("images", "histogram-wip-duration.png"), plot = histogram_wip_duration, width = 12, height = 12, units = "in", dpi = 300)
+  theme(text = element_text(size = 24), legend.position = "none") +
+  labs(title = "Density plot showing duration of word-internal pauses and regular speech pauses",
+       x = "Duration (msec)", y = "Density", color = "Dataset")
+ggsave(here("images", "density-plot.png"), plot = combined_density_plot, width = 12, height = 12, units = "in", dpi = 300)
 
 # Proportion of <<wip>> in various duration groups
 duration_groups_wip <- doreco_data_preprocessed %>%
@@ -193,18 +197,6 @@ cleaned_pause_data <- doreco_ph_csv_data %>%
   filter(wd == "<p:>") %>%
   ungroup() %>%
   filter(lang %in% languages_with_wip)
-
-# Histogram of silent pause duration 
-histogram_pause_duration <- ggplot(cleaned_pause_data, aes(x = pause_duration)) +
-  geom_histogram(aes(y = stat(count) / sum(..count..)), fill = "steelblue", color = "white", bins = 30) +
-  geom_density(data = cleaned_pause_data, aes(x = pause_duration), color = "black", alpha = 0.7, linewidth = 1.2) +
-  geom_rug(alpha = 0.5, sides = "b") +
-  scale_fill_viridis_c(option = "D", direction = -1) +
-  xlim(0,2000)+
-  theme_minimal() +
-  theme(text=element_text(size=24))+
-  labs(title = "Histogram of pause duration", x = "Duration (msec)", y = "Density")
-ggsave(here("images", "histogram-pause-duration.png"), plot = histogram_pause_duration, width = 12, height = 12, units = "in", dpi = 300)
 
 duration_groups_pause <- cleaned_pause_data %>%
   summarise(below_500 = sum(pause_duration < 500),
@@ -303,14 +295,14 @@ wip_counts_and_synthesis <- left_join(synthesis_table, counting_wips, by = "lang
 # Plot: Proportion of wips relative to synthesis score
 synthesis_plot <- ggplot(wip_counts_and_synthesis, aes(y = synthesis, x = percent_of_wips)) +
   geom_point(color = "black", size = 3, show.legend = F) +
-  geom_smooth(method = "lm", color = "blue", linewidth = 2, se = TRUE) +
+  geom_smooth(method = "lm", color = "black", linewidth = 2, se = TRUE) +
   theme_minimal() +
   theme(text = element_text(size = 24),
         legend.position = "none") +
   scale_x_log10(breaks = c(0, 0.1, 1),
                 labels = c("0%", "0.1%", "1%"))+
   labs(
-    title = "Synthesis",
+    title = "Morphological synthesis and word-internal pauses",
     y = "Synthesis score",
     x = "Proportion of word-internal pauses among all pauses"
   )
@@ -362,7 +354,8 @@ morph_type_count_disr <- morph_type_data %>%
 barplot_morphtype_disruptive <- ggplot(data = morph_type_count_disr, aes(y = n, x = mt_context)) +
   geom_bar(stat = "identity") +
   theme_minimal() +
-  theme(text = element_text(size = 24),
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        text = element_text(size = 24),
         legend.position = "none") +
   labs(
     title = "Morph combinations split by disruptive pauses",
@@ -371,7 +364,6 @@ barplot_morphtype_disruptive <- ggplot(data = morph_type_count_disr, aes(y = n, 
   )
 
 ggsave(here("images", "morph-type-disr.png"), plot = barplot_morphtype_disruptive, width = 12, height = 12, units = "in", dpi = 300)
-
 
 # Ultra-disruptive pauses
 morph_types = c("proclitic", "prefix", "root", "suffix", "enclitic")
@@ -385,7 +377,8 @@ morph_type_count_ultr <- morph_type_data %>%
 barplot_morphtype_ultra_disruptive <- ggplot(data = morph_type_count_ultr, aes(y = n, x = mt_right_of_wip)) +
   geom_bar(stat = "identity") +
   theme_minimal() +
-  theme(text = element_text(size = 24),
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        text = element_text(size = 24),
         legend.position = "none") +
   labs(
     title = "Morph types split by ultra-disruptive pauses",
