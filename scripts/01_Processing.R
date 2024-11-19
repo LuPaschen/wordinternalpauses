@@ -165,7 +165,7 @@ combined_density_plot <- ggplot() +
   xlim(0, 2500) +
   theme_minimal() +
   theme(text = element_text(size = 24), legend.position = "none") +
-  labs(title = "Density plot showing duration of word-internal pauses and regular speech pauses",
+  labs(title = "Density plot for word-internal and regular pauses",
        x = "Duration (msec)", y = "Density", color = "Dataset")
 ggsave(here("images", "density-plot.png"), plot = combined_density_plot, width = 12, height = 12, units = "in", dpi = 300)
 
