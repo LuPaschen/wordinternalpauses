@@ -30,5 +30,5 @@ synthesis <- doreco_wd_csv_data %>%
   summarise(synthesis = unique(synthesis), .groups = 'drop')
 
 # Write to a new CSV file
-write_csv(synthesis, here("processed_data", "DoReCo_1_3_core_synthesis.csv"))
+write_csv(synthesis, here("processed_data", "DoReCo_2_0_core_synthesis.csv"))
 
