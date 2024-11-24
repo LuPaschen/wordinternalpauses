@@ -12,7 +12,7 @@ library(scales)
 
 
 
-# 1) Read CSV files from DoReCo 1.3 ####
+# 1) Read CSV files from DoReCo 2.0 ####
 
 # The ph_csv and wd_csv files can be downloaded from DoReCo (https://doreco.huma-num.fr/) and should be placed in a folder "raw_data"
 
@@ -41,7 +41,7 @@ write.csv(doreco_wip_and_context, file = here("processed_data", "01_Filtering.cs
 
 
 # 3) Manual coding ####
-# addition of glosses for files with no or only partial annotation in DoReCo 1.3
+# addition of glosses for files with no or only partial annotation in DoReCo 2.0
 # addition of normalized part of speech tags
 # saved as "02_Manual_Additions.csv"
 
