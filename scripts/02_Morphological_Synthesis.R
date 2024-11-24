@@ -7,7 +7,7 @@
 library(tidyverse)
 library(here)
 
-# Read CSV files from DoReCo 1.3
+# Read CSV files from DoReCo 2.0
 doreco_wd_csv_dir = here("raw_data","wd_csv")
 doreco_wd_csv_files <- list.files(path = doreco_wd_csv_dir, pattern = "\\_wd.csv$", full.names = TRUE, recursive = TRUE)
 doreco_wd_csv_data <- map_df(doreco_wd_csv_files, ~read_csv(.x, col_types = cols(speaker = col_character())))
