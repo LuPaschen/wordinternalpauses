@@ -3,7 +3,7 @@
 library(tidyverse)
 library(lingtypology)
 
-# All 53 languages from DoReCo 1.3
+# All 53 languages from DoReCo 2.0
 languages_map_53 <- data.frame(lang = c("Anal", "Arapaho", "Isimjeega-Rootigaanga", "Bainounk-Gujaher", "Beja", "Bora", "Cabécar", "Cashinahua", "Daakie", "Ngalkbun",
                                         "Dolgan", "English", "Evenki", "Orkon-Fanbak", "French", "Goemai", "Gorowa", "Gurindji", "Ho-Chunk", "Jehai",
                                         "Jejueo", "Kakabe", "Kamas-Koibal", "Anta-Komnzo-Wára-Wérè-Kémä", "Light Warlpiri", "Lower Sorbian", "Trinitario-Javeriano-Loretano", "Movima", "Nafsan", "Nisvai",
