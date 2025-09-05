@@ -286,8 +286,10 @@ list(
 
 # 7) Synthesis ####
 
+# 7.1 Considering all word-internal pauses
+
 # Read synthesis score table created with 02_Morphological_Synthesis.R
-synthesis_table <- read.csv(here("processed_data", "DoReCo_1_3_core_synthesis.csv"))
+synthesis_table <- read.csv(here("processed_data", "DoReCo_2_0_core_synthesis.csv"))
 
 # Merging and normalizing
 wip_counts_and_synthesis <- left_join(synthesis_table, counting_wips, by = "lang")  
@@ -302,14 +304,57 @@ synthesis_plot <- ggplot(wip_counts_and_synthesis, aes(y = synthesis, x = percen
   scale_x_log10(breaks = c(0, 0.1, 1),
                 labels = c("0%", "0.1%", "1%"))+
   labs(
-    title = "Morphological synthesis and word-internal pauses",
+    title = "Morphological synthesis and wips",
     y = "Synthesis score",
-    x = "Proportion of word-internal pauses among all pauses"
+    x = "Percentage of word-internal pauses among all pauses"
   )
 ggsave(here("images", "synthesis.png"), plot = synthesis_plot, width = 12, height = 12, units = "in", dpi = 300)
 
-# Pearson's Correlation Coefficient
+# Pearson's Correlation Coefficient % 0.2392014
 pearson <- cor(log(wip_counts_and_synthesis$percent_of_wips), wip_counts_and_synthesis$synthesis)
+
+# 7.2 Considering only word-internal pauses around non-clitics
+
+# Count wips again, this time ignoring clitics
+counting_wips_no_clitics <- doreco_wd_csv_data %>%
+  mutate(
+    prev_mb_has_eq = str_detect(lag(mb, default = ""), "="),
+    next_mb_has_eq = str_detect(lead(mb, default = ""), "=")
+  ) %>%
+  filter(!(wd == "<<wip>>" & (prev_mb_has_eq | next_mb_has_eq))) %>%
+  select(-prev_mb_has_eq, -next_mb_has_eq) %>%
+  filter(wd %in% c("<p:>", "<<wip>>")) %>%
+  group_by(lang) %>%
+  summarise(
+    number_of_wips = sum(wd == "<<wip>>"),
+    total_pauses = sum(wd == "<p:>") + sum(wd == "<<wip>>"),
+    percent_of_wips = round((100 * number_of_wips / total_pauses), 2)
+  ) %>%
+  select(lang, number_of_wips, percent_of_wips) %>%
+  arrange((desc(number_of_wips)))
+
+# Merging and normalizing
+wip_counts_and_synthesis_no_clitics <- left_join(synthesis_table, counting_wips_no_clitics, by = "lang") %>%  
+  filter(number_of_wips > 0)
+
+# Plot: Proportion of wips relative to synthesis score (no clitics)
+synthesis_plot_no_clitics <- ggplot(wip_counts_and_synthesis_no_clitics, aes(y = synthesis, x = percent_of_wips)) +
+  geom_point(color = "black", size = 3, show.legend = F) +
+  geom_smooth(method = "lm", color = "black", linewidth = 2, se = TRUE) +
+  theme_minimal() +
+  theme(text = element_text(size = 24),
+        legend.position = "none") +
+  scale_x_log10(breaks = c(0, 0.1, 1),
+                labels = c("0%", "0.1%", "1%"))+
+  labs(
+    title = "Morphological synthesis and wips (no clitics)",
+    y = "Synthesis score",
+    x = "Percentage of word-internal pauses (no clitics) among all pauses"
+  )
+ggsave(here("images", "synthesis-no-clitics.png"), plot = synthesis_plot_no_clitics, width = 12, height = 12, units = "in", dpi = 300)
+
+# Pearson's Correlation Coefficient % 0.427428
+pearson_no_clitics <- cor(log(wip_counts_and_synthesis_no_clitics$percent_of_wips), wip_counts_and_synthesis_no_clitics$synthesis)
 
 
 
@@ -476,7 +521,7 @@ final_lengthening_plot %>%
   summarise(median_duration = median(duration, na.rm = TRUE))
 
 # Linear mixed model to test the effect of position on vowel duration
-lmm <- lmer(log(duration) ~ position + ph + speech_rate + context + (1 | speaker) + (1 | lang), data = final_lengthening_data)
+lmm <- lmer(log(duration) ~ position + ph + speech_rate + context + (1 | lang/speaker), data = final_lengthening_data)
 
 # Model summary
 summary(lmm)
@@ -490,5 +535,6 @@ qqline(residuals_lmm, col = "red")
 
 # 10) Optional: Save workspace
 #save.image(here("wordinternalpauses.RData"))
+
 
 
