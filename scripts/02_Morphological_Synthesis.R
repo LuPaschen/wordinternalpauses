@@ -15,7 +15,8 @@ doreco_wd_csv_data <- map_df(doreco_wd_csv_files, ~read_csv(.x, col_types = cols
 # Calculate synthesis index based on mean number of morphs across word types
 synthesis <- doreco_wd_csv_data %>%
   select(lang, core_extended, wd, mb, mb_ID, gl) %>%
-  filter(!(lang %in% c("goem1240", "komn1238", "nngg1234", "nort2641", "sumi1235", "texi1237", "vera1241"))) %>%
+  group_by(lang) %>%
+  filter(any(wd == "<<wip>>")) %>% # This effectively excludes c("goem1240", "komn1238", "nngg1234", "nort2641", "sumi1235", "texi1237", "vera1241")
   filter(!is.na(gl)) %>%
   filter(core_extended == "core") %>%
   mutate(next_to_wip = ifelse(
@@ -31,4 +32,5 @@ synthesis <- doreco_wd_csv_data %>%
 
 # Write to a new CSV file
 write_csv(synthesis, here("processed_data", "DoReCo_2_0_core_synthesis.csv"))
+
 
