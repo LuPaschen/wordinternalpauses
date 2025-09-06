@@ -24,6 +24,7 @@ synthesis <- doreco_wd_csv_data %>%
   filter(next_to_wip == "no") %>%
   filter(wd != "<p:>") %>%
   filter(!str_starts(wd, '<<')) %>%
+  ungroup() %>%
   distinct(lang, wd, mb, .keep_all = T) %>%
   mutate(morph_count = str_count(mb_ID, "m")) %>%
   group_by(lang) %>%
@@ -32,5 +33,6 @@ synthesis <- doreco_wd_csv_data %>%
 
 # Write to a new CSV file
 write_csv(synthesis, here("processed_data", "DoReCo_2_0_core_synthesis.csv"))
+
 
 
